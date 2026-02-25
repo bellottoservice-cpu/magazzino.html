@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magazzino Cella</title>
+
+<style>
+body{
+  font-family: Arial;
+  padding:15px;
+}
+
+table{
+  width:100%;
+  border-collapse: collapse;
+  margin-top:10px;
+}
+
+th, td{
+  border:1px solid #ccc;
+  padding:6px;
+  text-align:center;
+}
+
+button{
+  padding:5px 8px;
+}
+
+input{
+  width:70px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>MAGAZZINO CELLA</h2>
+
+<div id="tabella"></div>
+
+<hr>
+
+<button onclick="pdfGiacenze()">📄 PDF Giacenze</button>
+<button onclick="pdfOrdine('martedi')">📄 PDF Ordine Martedì</button>
+<button onclick="pdfOrdine('venerdi')">📄 PDF Ordine Venerdì</button>
+
+<script>
+
+let prodotti = JSON.parse(localStorage.getItem("magazzino")) || [
+
+{nome:"IV GAMMA", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"MISTA 4 GUSTI GROSSA IV GAMMA IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"MISTICANZA SFUSA IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"VALERIANA", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"ZUCCA CUBETTI BIO GR.200 ITA", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"AGLIO SECCO ESTERO", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CAROTE GROSSE IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CAVOLFIORI IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CAVOLO CAPPUCCIO VIOLA", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CAVOLO CAPPUCCIO CUORE DI BUE IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CAVOLO CAPPUCCIO BIANCO IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CAVOLO VERZA IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CETRIOLI IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CIPOLLE BIANCHE IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CIPOLLE DORATE ESTERO", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"CIPOLLE ROSSE IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"FINOCCHIO MEDIO", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"INSALATA GENTILE IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"MELANZANE NERE", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"PATATE IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"PEPERONI GIALLI IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"PEPERONI ROSSI IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"PEPERONI VERDI IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"POMODORO CILIEGINO IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"POMODORO RAMATO MEDIO IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"PORRI IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"RADICCHIO LUNGO ROSSO VEN", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"RADICCHIO MILANESE PAN DI ZUCCHERO", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"RADICCHIO TONDO ROSSO IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"RADICCHIO VARIEGATO VEN", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"RAPE ROSSE COTTE S.VUOTO IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"RUCOLA SELVATICA SFUSA IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"SEDANO BIANCO IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"SEDANO VERDE IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"ZUCCA ESTERO", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"ZUCCHINE GROSSE IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"PREZZEMOLO IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"ROSMARINO IT", kg:0, ordineMartedi:0, ordineVenerdi:0},
+{nome:"SALVIA IT", kg:0, ordineMartedi:0, ordineVenerdi:0}
+
+];
+
+function salva(){
+  localStorage.setItem("magazzino", JSON.stringify(prodotti));
+}
+
+function generaTabella(){
+
+  let html="<table><tr><th>Prodotto</th><th>Kg Attuali</th><th>+ Kg</th><th>- Kg</th><th>Ordine Martedì</th><th>Ordine Venerdì</th></tr>";
+
+  prodotti.forEach((p,i)=>{
+
+    html+="<tr>";
+    html+="<td>"+p.nome+"</td>";
+    html+="<td>"+p.kg.toFixed(2)+"</td>";
+    html+="<td><button onclick='modificaKg("+i+",1)'>➕</button></td>";
+    html+="<td><button onclick='modificaKg("+i+",-1)'>➖</button></td>";
+
+    html+="<td><input type='number' value='"+p.ordineMartedi+"' onchange='setOrdine("+i+",\"martedi\",this.value)'></td>";
+    html+="<td><input type='number' value='"+p.ordineVenerdi+"' onchange='setOrdine("+i+",\"venerdi\",this.value)'></td>";
+
+    html+="</tr>";
+  });
+
+  html+="</table>";
+
+  document.getElementById("tabella").innerHTML=html;
+}
+
+function modificaKg(index,tipo){
+
+  let valore = prompt("Quanti kg?");
+  if(!valore) return;
+
+  valore=parseFloat(valore);
+
+  if(tipo===1){
+    prodotti[index].kg += valore;
+  } else {
+    prodotti[index].kg -= valore;
+    if(prodotti[index].kg<0) prodotti[index].kg=0;
+  }
+
+  salva();
+  generaTabella();
+}
+
+function setOrdine(index,giorno,valore){
+  valore=parseFloat(valore)||0;
+
+  if(giorno==="martedi"){
+    prodotti[index].ordineMartedi=valore;
+  } else {
+    prodotti[index].ordineVenerdi=valore;
+  }
+
+  salva();
+}
+
+function pdfGiacenze(){
+
+  let tab="<h1>Giacenze Cella</h1><table border='1' cellpadding='5'><tr><th>Prodotto</th><th>Kg</th></tr>";
+
+  prodotti.forEach(p=>{
+    tab+="<tr><td>"+p.nome+"</td><td>"+p.kg.toFixed(2)+"</td></tr>";
+  });
+
+  tab+="</table>";
+
+  stampa(tab);
+}
+
+function pdfOrdine(giorno){
+
+  let titolo = giorno==="martedi" ? "Ordine Martedì" : "Ordine Venerdì";
+
+  let tab="<h1>"+titolo+"</h1><table border='1' cellpadding='5'><tr><th>Prodotto</th><th>Kg</th></tr>";
+
+  prodotti.forEach(p=>{
+    let q = giorno==="martedi" ? p.ordineMartedi : p.ordineVenerdi;
+    if(q>0){
+      tab+="<tr><td>"+p.nome+"</td><td>"+q+"</td></tr>";
+    }
+  });
+
+  tab+="</table>";
+
+  stampa(tab);
+}
+
+function stampa(contenuto){
+
+  let originale=document.body.innerHTML;
+
+  document.body.innerHTML=contenuto;
+  window.print();
+  document.body.innerHTML=originale;
+
+  generaTabella();
+}
+
+generaTabella();
+
+</script>
+
+</body>
+</html>
